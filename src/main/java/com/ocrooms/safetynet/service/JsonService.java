@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class JsonService {
@@ -24,11 +25,14 @@ public class JsonService {
         this.objectMapper = objectMapper;
     }
 
-    public List<Firestation> readJsonFileFirestations() {
+    public Set<Firestation> readJsonFileFirestations() {
         try {
             Resource resource = resourceLoader.getResource("classpath:data.json");
-            Map<String, List<Firestation>> dataMap = objectMapper.readValue(resource.getInputStream(), new TypeReference<Map<String, List<Firestation>>>() {
+            Map<String, Set<Firestation>> dataMap = objectMapper.readValue(resource.getInputStream(), new TypeReference<Map<String, Set<Firestation>>>() {
             });
+
+
+
 
             return dataMap.get("firestations");
 

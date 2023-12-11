@@ -1,17 +1,12 @@
 package com.ocrooms.safetynet.service;
 
-import com.ocrooms.safetynet.dto.ChildDto;
-import com.ocrooms.safetynet.dto.PersonDto;
-import com.ocrooms.safetynet.dto.PersonListDto;
+import com.ocrooms.safetynet.dto.*;
 import com.ocrooms.safetynet.entities.Firestation;
 import com.ocrooms.safetynet.entities.Medicalrecords;
 import com.ocrooms.safetynet.entities.Person;
-import com.ocrooms.safetynet.mapper.ChildDtoMapper;
-import com.ocrooms.safetynet.mapper.PersonDtoMapper;
-import com.ocrooms.safetynet.mapper.PersonListDtoMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,82 +14,192 @@ import java.util.stream.Collectors;
 
 @Service
 public class SecurityService {
-
-    private final List<Firestation> firestationsList;
+    private final JsonService jsonService;
+    private final Set<Firestation> firestationsList;
     private final List<Person> personsList;
     private final List<Medicalrecords> medicalrecordsList;
 
-    @Autowired
-    private PersonDtoMapper personDtoMapper;
-
-    @Autowired
-    private PersonListDtoMapper personListDtoMapper;
-
-    @Autowired
-    private ChildDtoMapper childDtoMapper;
-
-
     public SecurityService(JsonService jsonService) {
-        this.firestationsList = jsonService.readJsonFileFirestations();
-        this.personsList = jsonService.readJsonFilePersons();
         this.medicalrecordsList = jsonService.readJsonFileMedicalrecords();
+        this.personsList = jsonService.readJsonFilePersons();
+        this.firestationsList = jsonService.readJsonFileFirestations();
+        this.jsonService = jsonService;
+
+        //this.jsonService = jsonService;
     }
 
-
     /**
-     * Return a list of person covered by the corresponding fire station.
-     * @RequestParam(required = true) Integer station
-     * @return PersonListDto
+     * Return a persons list served by the station number
+     *
+     * @param station
+     * @return
      */
     public PersonListDto searchFirestation(Integer station) {
-        if (station != null) {
-            Set<String> stationsList = firestationsList.stream()
-                    .filter(firestation -> firestation.getStation() == (station))
-                    .map(Firestation::getAddress)
-                    .collect(Collectors.toSet());
-
-            List<PersonDto> personDto = personsList.stream()
-                    .filter(person -> stationsList.contains(person.getAddress()))
-                    .flatMap(person ->
-                            medicalrecordsList.stream()
-                                    .filter(mr -> mr.getFirstName().equals(person.getFirstName()) && mr.getLastName().equals(person.getLastName()))
-                                    .map(medicalrecords -> personDtoMapper.map(person))
-                    )
-                    .toList();
-
-            List<Integer> agesList = personDto.stream()
-                    .flatMap(person ->
-                            medicalrecordsList.stream()
-                                    .filter(mr -> mr.getFirstName().equals(person.getFirstName()) && mr.getLastName().equals(person.getLastName()))
-                                    .map(mr -> mr.calculateAge())
-                    ).toList();
-
-            return personListDtoMapper.map(personDto, agesList);
-
-        } else {
-            return null;
+        if (station == null) {
+            throw new RuntimeException("Bad request : station can not be null");
         }
+
+        //Set<String> stationsList = jsonService.getData().getFirestations().stream()
+        Set<String> stationsList = firestationsList.stream()
+                .filter(firestation -> firestation.getStation().equals(station))
+                .map(Firestation::getAddress)
+                .collect(Collectors.toSet());
+
+        //List<PersonDto> personDto = jsonService.getData().getPersons().stream()
+        List<PersonDto> personDto = personsList.stream()
+                .filter(person -> stationsList.contains(person.getAddress()))
+                .flatMap(person ->
+                        medicalrecordsList.stream()
+                                .filter(mr -> mr.getFirstName().equals(person.getFirstName()) && mr.getLastName().equals(person.getLastName()))
+                                .map(medicalrecords -> new PersonDto(person))
+                )
+                .toList();
+
+        long nbrMajor = personDto.stream()
+                .flatMap(person ->
+                        medicalrecordsList.stream()
+                                .filter(mr -> mr.getFirstName().equals(person.getFirstName()) && mr.getLastName().equals(person.getLastName()))
+                                .filter(mr -> mr.isMajor())
+                ).count();
+
+        return new PersonListDto(personDto, nbrMajor);
     }
 
     /**
-     * Return a list of children living at this address.
-     * @RequestParam(required = true) String address
-     * @return List<ChildDto>
+     * Return a children list living at this address
+     *
+     * @param address
+     * @return
      */
     public List<ChildDto> searchChildAlert(String address) {
-        if (address != null) {
-            List<ChildDto> childToDto = personsList.stream()
-                    .filter(person -> person.getAddress().equals(address))
-                    .flatMap(person ->
-                            medicalrecordsList.stream()
-                                    .filter(mr -> mr.getFirstName().equals(person.getFirstName()) && mr.getLastName().equals(person.getLastName()))
-                                    .map(mr -> childDtoMapper.map(mr, personsList))
-                    )
-                    .toList();
+        if (address == null) {
+            throw new RuntimeException("Bad request : address can not be null");
+        }
+        return personsList.stream()
+                .filter(person -> person.getAddress().equals(address))
+                .flatMap(person ->
+                        medicalrecordsList.stream()
+                                .filter(mr ->
+                                        mr.getFirstName().equals(person.getFirstName()) &&
+                                                mr.getLastName().equals(person.getLastName()) &&
+                                                mr.isMinor())
+                                .map(mr -> new ChildDto(
+                                        mr,
+                                        personsList.stream()
+                                                .filter(per -> per.getLastName().equals(mr.getLastName())).toList()))
+                )
+                .toList();
+    }
 
-            return childToDto.stream().filter(childDto -> childDto.getAge() < 18).toList();
+    /**
+     * Return a list of phone numbers served by the firestation number.
+     *
+     * @param firestationNumber
+     * @return
+     */
+    public List<String> searchPhoneAlert(Integer firestationNumber) {
+        if (firestationNumber == null) {
+            throw new RuntimeException("Bad request : firestationNumber can not be null");
+        }
+
+        return firestationsList.stream()
+                .filter(firestation -> firestation.getStation().equals(firestationNumber))
+                .flatMap(firestation -> personsList.stream()
+                        .filter(person -> person.getAddress().equals(firestation.getAddress()))
+                        .map(person -> person.getPhone())
+                ).toList();
+    }
+
+
+    /**
+     * Return a list of persons living at this address
+     *
+     * @param address
+     * @return
+     */
+    public List<PersonAddressStationDto> searchFire(String address) {
+        if (address == null) {
+            throw new RuntimeException("Bad request : address can not be null");
+        }
+
+        return personsList.stream()
+                .filter(person -> person.getAddress().equals(address))
+
+                .flatMap(person -> firestationsList.stream()
+                        .filter(firestation -> firestation.getAddress().equals(person.getAddress()))
+                        .flatMap(firestation -> medicalrecordsList.stream()
+                                .filter(medicalrecords -> medicalrecords.getFirstName().equals(person.getFirstName()) &&
+                                        medicalrecords.getLastName().equals(person.getLastName()))
+                                .map(medicalrecords -> new PersonAddressStationDto(person, firestation, medicalrecords))
+                        )
+
+                ).toList();
+    }
+
+    /**
+     * Return  a list persons served by the firestation List number.
+     *
+     * @param stations
+     * @return
+     */
+    public List<FloodDto> searchFlood(List<Integer> stations) {
+
+        List<String> adressesFirestations =
+                firestationsList.stream()
+                        .filter(firestation -> stations.contains(firestation.getStation()))
+                        .map(firestation -> firestation.getAddress()).toList();
+
+
+        List<FloodDto> FloodDtoList = new ArrayList<>();
+
+        for (String adresse : adressesFirestations) {
+
+            List<FloodPersonDto> floodPersonDtoList = personsList.stream()
+                    .filter(person -> person.getAddress().equals(adresse))
+                    .flatMap(person -> medicalrecordsList.stream()
+                            .filter(medicalrecords -> medicalrecords.getFirstName().equals(person.getFirstName()) && medicalrecords.getLastName().equals(person.getLastName()))
+                            .map(medicalrecords -> new FloodPersonDto(person, medicalrecords))
+                    ).toList();
+
+
+            FloodDtoList.add(new FloodDto(adresse, floodPersonDtoList));
 
         }
-        return null;
+        return FloodDtoList;
     }
+
+
+    /**
+     * Return persons info from the same family
+     *
+     * @param firstName
+     * @param lastName
+     * @return
+     */
+    public List<PersonInfoDto> searchPersonInfo(String firstName, String lastName) {
+
+        return personsList.stream().filter(person -> person.getLastName().equals(lastName))
+                .flatMap(person -> medicalrecordsList.stream()
+                        .filter(medicalrecords -> medicalrecords.getFirstName().equals(person.getFirstName()) && medicalrecords.getLastName().equals(lastName))
+                        .map(medicalrecords -> new PersonInfoDto(person, medicalrecords))
+                ).toList();
+
+    }
+
+
+    /**
+     * Return all emails of the city
+     *
+     * @param city
+     * @return
+     */
+    public List<String> searchEmail(String city) {
+        if (city == null) {
+            throw new RuntimeException("Bad request : city can not be null");
+        }
+        return personsList.stream()
+                .filter(person -> person.getCity().equals(city))
+                .map(person -> person.getEmail()).toList();
+    }
+
 }

@@ -2,15 +2,15 @@ package com.ocrooms.safetynet.service;
 
 import com.ocrooms.safetynet.entities.Medicalrecords;
 import com.ocrooms.safetynet.entities.Person;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 @Service
 public class MedicalRecordService {
-
+    private final static Logger logger = LoggerFactory.getLogger(MedicalRecordService.class);
     private final List<Medicalrecords> medicalrecordsList;
     private final List<Person> personsList;
 
@@ -25,49 +25,61 @@ public class MedicalRecordService {
 
 
     public Medicalrecords show(String firstName, String lastName) {
-        Optional<Medicalrecords> optionalMedicalrecords =
-                this.medicalrecordsList.stream()
-                        .filter(person -> person.getFirstName().equals(firstName) && person.getLastName().equals(lastName))
-                        .findFirst();
-
-        if (optionalMedicalrecords.isPresent()) {
-            return optionalMedicalrecords.get();
-        } else {
-            return null;
-        }
+        return medicalrecordsList.stream()
+                .filter(medicalrecords -> medicalrecords.getFirstName().equals(firstName) && medicalrecords.getLastName().equals(lastName))
+                .findFirst()
+                .orElse(null);
     }
 
-    public void create(Medicalrecords medicalrecords) {
+    public Medicalrecords create(Medicalrecords medicalrecords) {
+        // control medicalrecords does not exist
+        if (this.show(medicalrecords.getFirstName(), medicalrecords.getLastName()) != null) {
+            logger.error("Bad request: the medicalrecords already exist");
+            throw new RuntimeException("Bad request: the medicalrecords already exist");
+        }
         // control person exist before created his medical record
-        Optional<Person> personExist = this.personsList.stream()
+        Person personExist = personsList.stream()
                 .filter(person -> person.getFirstName().equals(medicalrecords.getFirstName()) && person.getLastName().equals(medicalrecords.getLastName()))
-                .findFirst();
+                .findFirst()
+                .orElse(null);
 
-        if (personExist.isPresent()) {
-            //control person has not a medical record
-            Medicalrecords medicalrecordsToCreate = this.show(medicalrecords.getFirstName(), medicalrecords.getLastName());
-            if (Objects.isNull(medicalrecordsToCreate)) {
-                this.medicalrecordsList.add(medicalrecords);
-            }
+        if (personExist == null) {
+            logger.error("Bad request: create person before his medicalrecords");
+            throw new RuntimeException("Bad request: create person before his medicalrecords");
+        } else {
+            this.medicalrecordsList.add(medicalrecords);
+            return medicalrecords;
         }
     }
+
 
     public void update(String firstName, String lastName, Medicalrecords medicalrecords) {
+
+        if (!firstName.equals(medicalrecords.getFirstName()) || !lastName.equals(medicalrecords.getLastName())) {
+            logger.error("Bad request: route id is different to person id");
+            throw new RuntimeException("Bad request: route id is different to person id");
+        }
+
         Medicalrecords medicalrecordsToUpdate = this.show(firstName, lastName);
 
-        if (!Objects.isNull(medicalrecordsToUpdate)) {
-            medicalrecordsToUpdate.setBirthdate(medicalrecords.getBirthdate());
-            medicalrecordsToUpdate.setMedications(medicalrecords.getMedications());
-            medicalrecordsToUpdate.setAllergies(medicalrecords.getAllergies());
+        if (medicalrecordsToUpdate == null) {
+            logger.error("Bad request: the medicalrecords does not exist");
+            throw new RuntimeException("Bad request: the medicalrecords does not exist");
         }
+
+        medicalrecordsToUpdate.setBirthdate(medicalrecords.getBirthdate());
+        medicalrecordsToUpdate.setMedications(medicalrecords.getMedications());
+        medicalrecordsToUpdate.setAllergies(medicalrecords.getAllergies());
+
     }
 
     public void delete(String firstName, String lastName) {
-        Medicalrecords medicalrecords = this.show(firstName, lastName);
 
-        if (!Objects.isNull(medicalrecords)) {
-            this.medicalrecordsList.remove(medicalrecords);
+        if ((firstName == null || lastName == null) || (firstName.isEmpty() || lastName.isEmpty())) {
+            logger.error("Bad request: params cannot be null or empty");
+            throw new RuntimeException("Bad request: params cannot be null or empty");
         }
+        medicalrecordsList.removeIf(mr -> mr.getFirstName().equals(firstName) && mr.getLastName().equals(lastName));
     }
 
 
