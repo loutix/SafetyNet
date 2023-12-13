@@ -2,6 +2,7 @@ package com.ocrooms.safetynet.controller;
 
 import com.ocrooms.safetynet.entities.Medicalrecords;
 import com.ocrooms.safetynet.service.MedicalRecordService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -26,31 +27,30 @@ public class MedicalRecordController {
         return this.medicalRecordService.index();
     }
 
-    @GetMapping(path = "{firstName}/{lastName}")
-    public Medicalrecords show(@PathVariable String firstName, @PathVariable String lastName) {
-        logger.info("GET /medicalRecord/{id}/{id_2}: " + firstName +" / "+ lastName);
+    @GetMapping("/show")
+    public Medicalrecords show(@RequestParam String firstName, @RequestParam String lastName) {
+        logger.info("GET /medicalRecord?firstName=" + firstName + "&lastName=" + lastName);
         return this.medicalRecordService.show(firstName, lastName);
     }
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    public @ResponseBody Medicalrecords create(@RequestBody Medicalrecords medicalrecords) {
+    public @ResponseBody Medicalrecords create(@Valid @RequestBody Medicalrecords medicalrecords) {
         logger.info("POST /medicalRecord: " + "  @RequestBody: " + medicalrecords);
         return this.medicalRecordService.create(medicalrecords);
     }
 
-
-    @PutMapping(path = "{firstName}/{lastName}")
+    @PutMapping
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void update(@PathVariable String firstName, @PathVariable String lastName, @RequestBody Medicalrecords medicalrecords) {
-        logger.info("PUT /medicalRecord/{id}/{id_2}: " + firstName +" / "+ lastName + " + @RequestBody: " + medicalrecords);
+    public void update(@RequestParam String firstName, @RequestParam String lastName, @Valid @RequestBody Medicalrecords medicalrecords) {
+        logger.info("PUT medicalRecord?firstName=" + firstName + "&lastName=" + lastName + "@RequestBody: " + medicalrecords);
         this.medicalRecordService.update(firstName, lastName, medicalrecords);
     }
 
-    @DeleteMapping(path = "{firstName}/{lastName}")
+    @DeleteMapping
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable String firstName, @PathVariable String lastName) {
-        logger.info("DELETE /medicalRecord/{id}/{id_2}: " + firstName +" / "+ lastName);
+    public void delete(@RequestParam String firstName, @RequestParam String lastName) {
+        logger.info("DELETE medicalRecord?firstName=" + firstName + "&lastName=" + lastName);
         this.medicalRecordService.delete(firstName, lastName);
     }
 

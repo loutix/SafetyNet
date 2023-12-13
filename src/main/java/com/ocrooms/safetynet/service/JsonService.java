@@ -25,50 +25,47 @@ public class JsonService {
         this.objectMapper = objectMapper;
     }
 
-    public Set<Firestation> readJsonFileFirestations() {
-        try {
-            Resource resource = resourceLoader.getResource("classpath:data.json");
-            Map<String, Set<Firestation>> dataMap = objectMapper.readValue(resource.getInputStream(), new TypeReference<Map<String, Set<Firestation>>>() {
-            });
-
-
-
-
-            return dataMap.get("firestations");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public List<Person> readJsonFilePersons() {
-        try {
-            Resource resource = resourceLoader.getResource("classpath:data.json");
-            Map<String, List<Person>> dataMap = objectMapper.readValue(resource.getInputStream(), new TypeReference<Map<String, List<Person>>>() {
-            });
-
-            return dataMap.get("persons");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public List<Medicalrecords> readJsonFileMedicalrecords() {
-        try {
-            Resource resource = resourceLoader.getResource("classpath:data.json");
-            Map<String, List<Medicalrecords>> dataMap = objectMapper.readValue(resource.getInputStream(), new TypeReference<Map<String, List<Medicalrecords>>>() {
-            });
-
-            return dataMap.get("medicalrecords");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+//    public Set<Firestation> readJsonFileFirestations() {
+//        try {
+//            Resource resource = resourceLoader.getResource("classpath:data.json");
+//            Map<String, Set<Firestation>> dataMap = objectMapper.readValue(resource.getInputStream(), new TypeReference<Map<String, Set<Firestation>>>() {
+//            });
+//
+//            return dataMap.get("firestations");
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+//
+//    public List<Person> readJsonFilePersons() {
+//        try {
+//            Resource resource = resourceLoader.getResource("classpath:data.json");
+//            Map<String, List<Person>> dataMap = objectMapper.readValue(resource.getInputStream(), new TypeReference<Map<String, List<Person>>>() {
+//            });
+//
+//            return dataMap.get("persons");
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+//
+//    public List<Medicalrecords> readJsonFileMedicalrecords() {
+//        try {
+//            Resource resource = resourceLoader.getResource("classpath:data.json");
+//            Map<String, List<Medicalrecords>> dataMap = objectMapper.readValue(resource.getInputStream(), new TypeReference<Map<String, List<Medicalrecords>>>() {
+//            });
+//
+//            return dataMap.get("medicalrecords");
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
 
 
 }

@@ -1,13 +1,44 @@
 package com.ocrooms.safetynet.entities;
 
 public class Person {
+
+    @NotNull
+    @Length(min = 2, max = 20)
     private String firstName;
+
+    @NotNull
+    @Length(min = 2, max = 20)
     private String lastName;
+
+    @NotNull
+    @Length(min = 2, max = 20)
     private String address;
+
+    @NotNull
+    @Length(min = 2, max = 20)
     private String city;
-    private int zip;
+
+    @NotNull
+    @Length(min = 2, max = 20)
+    private String zip;
+
+    @NotNull
+    @Length(min = 5, max = 30)
     private String phone;
+
+    @NotNull
+    @Email
     private String email;
+
+    public void trimProperties() {
+        this.firstName = this.firstName.trim();
+        this.lastName = this.lastName.trim();
+        this.address = this.address.trim();
+        this.city = this.city.trim();
+        this.zip = this.zip.trim();
+        this.phone = this.phone.trim();
+        this.email = this.email.trim();
+    }
 
     public Person() {
     }

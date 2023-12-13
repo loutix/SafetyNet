@@ -2,6 +2,8 @@ package com.ocrooms.safetynet.entities;
 
 public class Firestation {
 
+    @NotNull
+    @Length(min=1, max=20)
     private String address;
     private int station;
 
@@ -13,19 +15,7 @@ public class Firestation {
         this.station = station;
     }
 
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public int getStation() {
-        return station;
-    }
-
-    public void setStation(int station) {
-        this.station = station;
+    public void trimProperties() {
+        this.address = this.address.trim();
     }
 }

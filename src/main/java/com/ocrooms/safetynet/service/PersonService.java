@@ -1,6 +1,8 @@
 package com.ocrooms.safetynet.service;
 
 import com.ocrooms.safetynet.entities.Person;
+import com.ocrooms.safetynet.service.exceptions.ItemAlreadyExists;
+import com.ocrooms.safetynet.service.exceptions.ItemNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -11,69 +13,56 @@ import java.util.List;
 @Service
 public class PersonService {
     private final static Logger logger = LoggerFactory.getLogger(PersonService.class);
-    private final List<Person> personsList;
+    private final JsonService jsonService;
 
     public PersonService(JsonService jsonService) {
-        this.personsList = jsonService.readJsonFilePersons();
+        this.jsonService = jsonService;
     }
 
-    public List<Person> allPersons() {
-        return personsList;
+    public List<Person> index() {
+        return jsonService.getData().getPersons();
     }
 
 
     public Person show(String firstName, String lastName) {
-        return personsList.stream()
-                .filter(person -> person.getFirstName().equals(firstName) && person.getLastName().equals(lastName))
+        return jsonService.getData().getPersons().stream()
+                .filter(person -> person.getFirstName().equalsIgnoreCase(firstName.trim()) && person.getLastName().equalsIgnoreCase(lastName.trim()))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new ItemNotFoundException("The person with name: " + firstName + " " + lastName + " is not found"));
     }
 
     public Person create(Person person) {
-        if ((person.getFirstName() != null && person.getLastName() != null) && (!person.getFirstName().isEmpty() && !person.getLastName().isEmpty())) {
-            if (personsList.contains(person)) {
-                logger.error("Bad request: the person already exist");
-                throw new RuntimeException("Bad request: the person already exist");
-            } else {
-                personsList.add(person);
-                return person;
-            }
+
+        person.trimProperties();
+
+        if (jsonService.getData().getPersons().contains(person)) {
+            throw new ItemAlreadyExists("Bad request:" + person + " already exist");
+        } else {
+            System.out.println(person.getFirstName());
+            jsonService.getData().getPersons().add(person);
+            return person;
         }
-        return null;
     }
 
     public void update(String firstName, String lastName, Person person) {
 
-        if (!firstName.equals(person.getFirstName()) || !lastName.equals(person.getLastName())) {
-            logger.error("Bad request: route id is different to person id");
-            throw new RuntimeException("Bad request: route id is different to person id");
-        }
+        Person personToUpdate = this.show(firstName.trim(), lastName.trim());
 
-        if (person.getFirstName().isEmpty() || person.getLastName().isEmpty()) {
-            logger.error("Bad request: params cannot be empty");
-            throw new RuntimeException("Bad request: params cannot be empty");
-        }
+        person.trimProperties();
 
-        Person personToUpdate = this.show(person.getFirstName(), person.getLastName());
-        if (personToUpdate == null) {
-            logger.error("Bad request: the person does not exist");
-            throw new RuntimeException("Bad request: the person does not exist");
-        } else {
+        if (personToUpdate.getFirstName().equals(person.getFirstName()) && personToUpdate.getLastName().equals(person.getLastName())) {
             personToUpdate.setAddress(person.getAddress());
             personToUpdate.setCity(person.getCity());
             personToUpdate.setZip(person.getZip());
             personToUpdate.setPhone(person.getPhone());
             personToUpdate.setEmail(person.getEmail());
-
+        } else {
+            throw new ItemNotFoundException("@RequestParam : " + firstName + " " + lastName + " is different to @RequestBody " + personToUpdate.getFirstName() + " " + personToUpdate.getLastName());
         }
     }
 
     public void delete(String firstName, String lastName) {
-        if ((firstName == null || lastName == null) || (firstName.isEmpty() || lastName.isEmpty())) {
-            logger.error("Bad request: params cannot be null or empty");
-            throw new RuntimeException("Bad request: params cannot be null or empty");
-        }
-        personsList.removeIf(person -> person.getFirstName().equals(firstName) && person.getLastName().equals(lastName));
+        jsonService.getData().getPersons().removeIf(person -> person.getFirstName().equals(firstName) && person.getLastName().equals(lastName));
     }
 }
 

@@ -22,7 +22,8 @@ public class SecurityController {
     }
 
     @GetMapping(path = "firestation")
-    public @ResponseBody PersonListDto searchFirestation(@RequestParam(required = true) Integer station) {
+    public @ResponseBody PersonListDto searchFirestation(@RequestParam(required = true) int station) {
+        logger.info("GET /firestation?station=" + station);
         return this.securityService.searchFirestation(station);
     }
 

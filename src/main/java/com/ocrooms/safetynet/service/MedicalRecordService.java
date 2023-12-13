@@ -2,6 +2,8 @@ package com.ocrooms.safetynet.service;
 
 import com.ocrooms.safetynet.entities.Medicalrecords;
 import com.ocrooms.safetynet.entities.Person;
+import com.ocrooms.safetynet.service.exceptions.ItemAlreadyExists;
+import com.ocrooms.safetynet.service.exceptions.ItemNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -10,76 +12,62 @@ import java.util.List;
 
 @Service
 public class MedicalRecordService {
+    private final JsonService jsonService;
     private final static Logger logger = LoggerFactory.getLogger(MedicalRecordService.class);
-    private final List<Medicalrecords> medicalrecordsList;
-    private final List<Person> personsList;
 
-    public MedicalRecordService(JsonService jsonService, PersonService personService) {
-        this.medicalrecordsList = jsonService.readJsonFileMedicalrecords();
-        this.personsList = personService.allPersons();
+
+    public MedicalRecordService(JsonService jsonService) {
+        this.jsonService = jsonService;
+
     }
 
     public List<Medicalrecords> index() {
-        return this.medicalrecordsList;
+        return this.jsonService.getData().getMedicalrecords();
     }
 
 
     public Medicalrecords show(String firstName, String lastName) {
-        return medicalrecordsList.stream()
-                .filter(medicalrecords -> medicalrecords.getFirstName().equals(firstName) && medicalrecords.getLastName().equals(lastName))
+        return jsonService.getData().getMedicalrecords().stream()
+                .filter(medicalrecords -> medicalrecords.getFirstName().equalsIgnoreCase(firstName.trim()) && medicalrecords.getLastName().equalsIgnoreCase(lastName.trim()))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new ItemNotFoundException("The medical record with the name: " + firstName + " " + lastName + " is not found"));
     }
 
     public Medicalrecords create(Medicalrecords medicalrecords) {
-        // control medicalrecords does not exist
-        if (this.show(medicalrecords.getFirstName(), medicalrecords.getLastName()) != null) {
-            logger.error("Bad request: the medicalrecords already exist");
-            throw new RuntimeException("Bad request: the medicalrecords already exist");
+
+        medicalrecords.trimProperties();
+
+        if (jsonService.getData().getMedicalrecords().stream().anyMatch(mr -> mr.getFirstName().equalsIgnoreCase(medicalrecords.getFirstName()) && mr.getLastName().equalsIgnoreCase(medicalrecords.getLastName()))) {
+            throw new ItemAlreadyExists("Bad request:" + medicalrecords + " already exist");
         }
-        // control person exist before created his medical record
-        Person personExist = personsList.stream()
+        Person personExist = jsonService.getData().getPersons().stream()
                 .filter(person -> person.getFirstName().equals(medicalrecords.getFirstName()) && person.getLastName().equals(medicalrecords.getLastName()))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new ItemNotFoundException("Bad request: create person before his medicalrecords"));
 
-        if (personExist == null) {
-            logger.error("Bad request: create person before his medicalrecords");
-            throw new RuntimeException("Bad request: create person before his medicalrecords");
-        } else {
-            this.medicalrecordsList.add(medicalrecords);
-            return medicalrecords;
-        }
+        this.jsonService.getData().getMedicalrecords().add(medicalrecords);
+
+        return medicalrecords;
     }
 
 
     public void update(String firstName, String lastName, Medicalrecords medicalrecords) {
 
-        if (!firstName.equals(medicalrecords.getFirstName()) || !lastName.equals(medicalrecords.getLastName())) {
-            logger.error("Bad request: route id is different to person id");
-            throw new RuntimeException("Bad request: route id is different to person id");
+        Medicalrecords medicalrecordToUpdate = this.show(firstName.trim(), lastName.trim());
+
+        medicalrecords.trimProperties();
+
+        if (medicalrecordToUpdate.getFirstName().equals(medicalrecords.getFirstName()) && medicalrecordToUpdate.getLastName().equals(medicalrecords.getLastName())) {
+            medicalrecordToUpdate.setBirthdate(medicalrecords.getBirthdate());
+            medicalrecordToUpdate.setMedications(medicalrecords.getMedications());
+            medicalrecordToUpdate.setAllergies(medicalrecords.getAllergies());
+        } else {
+            throw new ItemNotFoundException("@RequestParam : " + firstName + " " + lastName + " is different to @RequestBody " + medicalrecordToUpdate.getFirstName() + " " + medicalrecordToUpdate.getLastName());
         }
-
-        Medicalrecords medicalrecordsToUpdate = this.show(firstName, lastName);
-
-        if (medicalrecordsToUpdate == null) {
-            logger.error("Bad request: the medicalrecords does not exist");
-            throw new RuntimeException("Bad request: the medicalrecords does not exist");
-        }
-
-        medicalrecordsToUpdate.setBirthdate(medicalrecords.getBirthdate());
-        medicalrecordsToUpdate.setMedications(medicalrecords.getMedications());
-        medicalrecordsToUpdate.setAllergies(medicalrecords.getAllergies());
-
     }
 
     public void delete(String firstName, String lastName) {
-
-        if ((firstName == null || lastName == null) || (firstName.isEmpty() || lastName.isEmpty())) {
-            logger.error("Bad request: params cannot be null or empty");
-            throw new RuntimeException("Bad request: params cannot be null or empty");
-        }
-        medicalrecordsList.removeIf(mr -> mr.getFirstName().equals(firstName) && mr.getLastName().equals(lastName));
+        jsonService.getData().getMedicalrecords().removeIf(medicalrecords -> medicalrecords.getFirstName().equalsIgnoreCase(firstName.trim()) && medicalrecords.getLastName().equalsIgnoreCase(lastName.trim()));
     }
 
 

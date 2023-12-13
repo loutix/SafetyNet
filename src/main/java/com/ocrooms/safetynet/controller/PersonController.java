@@ -2,6 +2,7 @@ package com.ocrooms.safetynet.controller;
 
 import com.ocrooms.safetynet.entities.Person;
 import com.ocrooms.safetynet.service.PersonService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -21,35 +22,35 @@ public class PersonController {
     }
 
     @GetMapping
-    public @ResponseBody List<Person> allPersons() {
+    public @ResponseBody List<Person> index() {
         logger.info("GET /person");
-        return personService.allPersons();
+        return personService.index();
     }
 
-    @GetMapping(path = "{firstName}/{lastName}")
-    public @ResponseBody Person show(@PathVariable String firstName, @PathVariable String lastName) {
-        logger.info("GET /person/{id}/{id_2}: " + firstName +"/"+lastName);
+    @GetMapping("/show")
+    public @ResponseBody Person show(@RequestParam String firstName, @RequestParam String lastName) {
+        logger.info("GET person/show?firstName=" + firstName +"&lastname="+lastName);
         return personService.show(firstName, lastName);
     }
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    public @ResponseBody Person create(@RequestBody Person person) {
-        logger.info("POST /person: " + person);
+    public @ResponseBody Person create(@Valid  @RequestBody Person person) {
+        logger.info("POST person: " + person);
         return personService.create(person);
     }
 
-    @PutMapping(path = "{firstName}/{lastName}")
+    @PutMapping
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void update(@PathVariable String firstName, @PathVariable String lastName, @RequestBody Person person) {
-        logger.info("PUT /person/{id}/{id_2}: " + firstName +"/"+lastName + "@RequestBody: " + person);
+    public void update(@RequestParam String firstName, @RequestParam String lastName, @Valid @RequestBody Person person) {
+        logger.info("PUT person?firstName=" + firstName +"&firstName="+lastName + "(@RequestBody: " + person);
         this.personService.update(firstName, lastName, person);
     }
 
-    @DeleteMapping(path = "{firstName}/{lastName}")
+    @DeleteMapping
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable String firstName, @PathVariable String lastName) {
-        logger.info("DELETE /person/{id}/{id_2}: " + firstName +"/"+lastName);
+    public void delete(@RequestParam String firstName, @RequestParam String lastName) {
+        logger.info("DELETE person?firstName=" + firstName +"&firstName="+lastName);
         this.personService.delete(firstName, lastName);
     }
 

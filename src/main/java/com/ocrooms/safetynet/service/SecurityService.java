@@ -2,8 +2,6 @@ package com.ocrooms.safetynet.service;
 
 import com.ocrooms.safetynet.dto.*;
 import com.ocrooms.safetynet.entities.Firestation;
-import com.ocrooms.safetynet.entities.Medicalrecords;
-import com.ocrooms.safetynet.entities.Person;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,17 +13,10 @@ import java.util.stream.Collectors;
 @Service
 public class SecurityService {
     private final JsonService jsonService;
-    private final Set<Firestation> firestationsList;
-    private final List<Person> personsList;
-    private final List<Medicalrecords> medicalrecordsList;
+
 
     public SecurityService(JsonService jsonService) {
-        this.medicalrecordsList = jsonService.readJsonFileMedicalrecords();
-        this.personsList = jsonService.readJsonFilePersons();
-        this.firestationsList = jsonService.readJsonFileFirestations();
         this.jsonService = jsonService;
-
-        //this.jsonService = jsonService;
     }
 
     /**
@@ -40,16 +31,16 @@ public class SecurityService {
         }
 
         //Set<String> stationsList = jsonService.getData().getFirestations().stream()
-        Set<String> stationsList = firestationsList.stream()
+        Set<String> stationsList = jsonService.getData().getFirestations().stream()
                 .filter(firestation -> firestation.getStation().equals(station))
                 .map(Firestation::getAddress)
                 .collect(Collectors.toSet());
 
         //List<PersonDto> personDto = jsonService.getData().getPersons().stream()
-        List<PersonDto> personDto = personsList.stream()
+        List<PersonDto> personDto = jsonService.getData().getPersons().stream()
                 .filter(person -> stationsList.contains(person.getAddress()))
                 .flatMap(person ->
-                        medicalrecordsList.stream()
+                        jsonService.getData().getMedicalrecords().stream()
                                 .filter(mr -> mr.getFirstName().equals(person.getFirstName()) && mr.getLastName().equals(person.getLastName()))
                                 .map(medicalrecords -> new PersonDto(person))
                 )
@@ -57,7 +48,7 @@ public class SecurityService {
 
         long nbrMajor = personDto.stream()
                 .flatMap(person ->
-                        medicalrecordsList.stream()
+                        jsonService.getData().getMedicalrecords().stream()
                                 .filter(mr -> mr.getFirstName().equals(person.getFirstName()) && mr.getLastName().equals(person.getLastName()))
                                 .filter(mr -> mr.isMajor())
                 ).count();
@@ -75,17 +66,17 @@ public class SecurityService {
         if (address == null) {
             throw new RuntimeException("Bad request : address can not be null");
         }
-        return personsList.stream()
+        return jsonService.getData().getPersons().stream()
                 .filter(person -> person.getAddress().equals(address))
                 .flatMap(person ->
-                        medicalrecordsList.stream()
+                        jsonService.getData().getMedicalrecords().stream()
                                 .filter(mr ->
                                         mr.getFirstName().equals(person.getFirstName()) &&
                                                 mr.getLastName().equals(person.getLastName()) &&
                                                 mr.isMinor())
                                 .map(mr -> new ChildDto(
                                         mr,
-                                        personsList.stream()
+                                        jsonService.getData().getPersons().stream()
                                                 .filter(per -> per.getLastName().equals(mr.getLastName())).toList()))
                 )
                 .toList();
@@ -102,9 +93,9 @@ public class SecurityService {
             throw new RuntimeException("Bad request : firestationNumber can not be null");
         }
 
-        return firestationsList.stream()
+        return jsonService.getData().getFirestations().stream()
                 .filter(firestation -> firestation.getStation().equals(firestationNumber))
-                .flatMap(firestation -> personsList.stream()
+                .flatMap(firestation -> jsonService.getData().getPersons().stream()
                         .filter(person -> person.getAddress().equals(firestation.getAddress()))
                         .map(person -> person.getPhone())
                 ).toList();
@@ -122,12 +113,12 @@ public class SecurityService {
             throw new RuntimeException("Bad request : address can not be null");
         }
 
-        return personsList.stream()
+        return jsonService.getData().getPersons().stream()
                 .filter(person -> person.getAddress().equals(address))
 
-                .flatMap(person -> firestationsList.stream()
+                .flatMap(person -> jsonService.getData().getFirestations().stream()
                         .filter(firestation -> firestation.getAddress().equals(person.getAddress()))
-                        .flatMap(firestation -> medicalrecordsList.stream()
+                        .flatMap(firestation -> jsonService.getData().getMedicalrecords().stream()
                                 .filter(medicalrecords -> medicalrecords.getFirstName().equals(person.getFirstName()) &&
                                         medicalrecords.getLastName().equals(person.getLastName()))
                                 .map(medicalrecords -> new PersonAddressStationDto(person, firestation, medicalrecords))
@@ -145,7 +136,7 @@ public class SecurityService {
     public List<FloodDto> searchFlood(List<Integer> stations) {
 
         List<String> adressesFirestations =
-                firestationsList.stream()
+                jsonService.getData().getFirestations().stream()
                         .filter(firestation -> stations.contains(firestation.getStation()))
                         .map(firestation -> firestation.getAddress()).toList();
 
@@ -154,9 +145,9 @@ public class SecurityService {
 
         for (String adresse : adressesFirestations) {
 
-            List<FloodPersonDto> floodPersonDtoList = personsList.stream()
+            List<FloodPersonDto> floodPersonDtoList = jsonService.getData().getPersons().stream()
                     .filter(person -> person.getAddress().equals(adresse))
-                    .flatMap(person -> medicalrecordsList.stream()
+                    .flatMap(person -> jsonService.getData().getMedicalrecords().stream()
                             .filter(medicalrecords -> medicalrecords.getFirstName().equals(person.getFirstName()) && medicalrecords.getLastName().equals(person.getLastName()))
                             .map(medicalrecords -> new FloodPersonDto(person, medicalrecords))
                     ).toList();
@@ -178,8 +169,8 @@ public class SecurityService {
      */
     public List<PersonInfoDto> searchPersonInfo(String firstName, String lastName) {
 
-        return personsList.stream().filter(person -> person.getLastName().equals(lastName))
-                .flatMap(person -> medicalrecordsList.stream()
+        return jsonService.getData().getPersons().stream().filter(person -> person.getLastName().equals(lastName))
+                .flatMap(person -> jsonService.getData().getMedicalrecords().stream()
                         .filter(medicalrecords -> medicalrecords.getFirstName().equals(person.getFirstName()) && medicalrecords.getLastName().equals(lastName))
                         .map(medicalrecords -> new PersonInfoDto(person, medicalrecords))
                 ).toList();
@@ -197,7 +188,7 @@ public class SecurityService {
         if (city == null) {
             throw new RuntimeException("Bad request : city can not be null");
         }
-        return personsList.stream()
+        return jsonService.getData().getPersons().stream()
                 .filter(person -> person.getCity().equals(city))
                 .map(person -> person.getEmail()).toList();
     }

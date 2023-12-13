@@ -2,6 +2,7 @@ package com.ocrooms.safetynet.controller;
 
 import com.ocrooms.safetynet.entities.Firestation;
 import com.ocrooms.safetynet.service.FireStationService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -27,30 +28,38 @@ public class FireStationController {
         return this.fireStationService.index();
     }
 
-    @GetMapping(path = "{address}")
-    public @ResponseBody List<Firestation> show(@PathVariable String address) {
-        logger.info("GET /firestations/{id}: " + address);
+    @GetMapping(path = "/show")
+    public @ResponseBody List<Firestation> show(@RequestParam String address) {
+        logger.info("GET /firestations?address=" + address);
         return fireStationService.show(address);
     }
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    public @ResponseBody Firestation create(@RequestBody Firestation firestation) {
+    public @ResponseBody Firestation create(@Valid @RequestBody Firestation firestation) {
         logger.info("POST /firestations: " + firestation);
         return this.fireStationService.create(firestation);
     }
 
-    @PutMapping(path = "{address}")
+    @PutMapping
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void update(@PathVariable String address, @RequestBody Firestation.FirestationUpdateRequest firestationUpdateRequest) {
-        logger.info("PUT /firestations/{id}: " + address + " + @RequestBody: " + firestationUpdateRequest);
+    public void update(@RequestParam String address, @Valid @RequestBody Firestation.FirestationUpdateRequest firestationUpdateRequest) {
+        logger.info("PUT /firestations?address=" + address + " + @RequestBody: " + firestationUpdateRequest);
         this.fireStationService.update(address, firestationUpdateRequest);
     }
 
-    @DeleteMapping(path = "{address}")
+    @DeleteMapping()
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable String address) {
-        logger.info("DELETE /firestations/{id}: " + address);
-        this.fireStationService.delete(address);
+    public void delete(@RequestParam(required = false) String address, @RequestParam(required = false) Integer station) {
+        logger.info("DELETE /firestations?address=" + address + "&station=" + station);
+        this.fireStationService.delete(address, station);
     }
 }
+
+
+
+
+
+
+
+
