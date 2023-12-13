@@ -21,7 +21,6 @@ public class FireStationService {
         this.jsonService = jsonService;
     }
 
-    //todo sorted .sorted()
     public Set<Firestation> index() {
         return jsonService.getData().getFirestations();
     }
