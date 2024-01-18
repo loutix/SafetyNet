@@ -13,7 +13,9 @@ public class PersonListDto {
 
     List<PersonDto> personDtoList;
 
-    public PersonListDto(List<PersonDto> personDtoList, long under18, long above18) {
+    public PersonListDto(List<PersonDto> personDtoList, long nbrMajor) {
+        this.nbrMajor = nbrMajor;
+        this.nbrMinor = personDtoList.size() - nbrMajor;
         this.personDtoList = personDtoList;
     }
 }
