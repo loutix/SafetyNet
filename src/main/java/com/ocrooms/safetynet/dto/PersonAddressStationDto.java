@@ -1,7 +1,7 @@
 package com.ocrooms.safetynet.dto;
 
 import com.ocrooms.safetynet.entities.Firestation;
-import com.ocrooms.safetynet.entities.Medicalrecords;
+import com.ocrooms.safetynet.entities.MedicalRecord;
 import com.ocrooms.safetynet.entities.Person;
 import lombok.Data;
 
@@ -18,7 +18,7 @@ public class PersonAddressStationDto {
     List<String> medications;
     List<String> allergies;
 
-    public PersonAddressStationDto(Person person, Firestation firestation, Medicalrecords medicalrecords) {
+    public PersonAddressStationDto(Person person, Firestation firestation, MedicalRecord medicalrecords) {
         this.lastName = person.getLastName();
         this.phone = person.getPhone();
         this.age = medicalrecords.calculateAge();

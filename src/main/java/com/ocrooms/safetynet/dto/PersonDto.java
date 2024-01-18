@@ -49,4 +49,8 @@ public class PersonDto {
     public void setPhone(String phone) {
         this.phone = phone;
     }
+
+    public String getId() {
+        return firstName + "-" + lastName;
+    }
 }

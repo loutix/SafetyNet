@@ -1,57 +1,57 @@
 package com.ocrooms.safetynet.controller;
 
-import com.ocrooms.safetynet.entities.Medicalrecords;
+import com.ocrooms.safetynet.entities.MedicalRecord;
 import com.ocrooms.safetynet.service.MedicalRecordService;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
+import java.util.Set;
+@Slf4j
 @RestController
-@RequestMapping(value = "medicalRecord")
+@RequestMapping(value = "medical-record")
 public class MedicalRecordController {
 
-    private final static Logger logger = LoggerFactory.getLogger(MedicalRecordController.class);
-    private MedicalRecordService medicalRecordService;
+
+    private final MedicalRecordService medicalRecordService;
 
     public MedicalRecordController(MedicalRecordService medicalRecordService) {
         this.medicalRecordService = medicalRecordService;
     }
 
     @GetMapping
-    public List<Medicalrecords> index() {
-        logger.info("GET /medicalRecord");
+    public Set<MedicalRecord> index() {
+       log.info("GET /medical-record");
         return this.medicalRecordService.index();
     }
 
-    @GetMapping("/show")
-    public Medicalrecords show(@RequestParam String firstName, @RequestParam String lastName) {
-        logger.info("GET /medicalRecord?firstName=" + firstName + "&lastName=" + lastName);
-        return this.medicalRecordService.show(firstName, lastName);
+    @GetMapping("{id}")
+    public MedicalRecord show(@PathVariable String id) {
+        log.info("GET/medical-record/{id} = " + id);
+        return this.medicalRecordService.show(id);
     }
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    public @ResponseBody Medicalrecords create(@Valid @RequestBody Medicalrecords medicalrecords) {
-        logger.info("POST /medicalRecord: " + "  @RequestBody: " + medicalrecords);
+    public @ResponseBody MedicalRecord create(@Valid @RequestBody MedicalRecord medicalrecords) {
+        log.info("POST/medical-record: " + "  @RequestBody: " + medicalrecords);
         return this.medicalRecordService.create(medicalrecords);
     }
 
-    @PutMapping
+    @PutMapping("{id}")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void update(@RequestParam String firstName, @RequestParam String lastName, @Valid @RequestBody Medicalrecords medicalrecords) {
-        logger.info("PUT medicalRecord?firstName=" + firstName + "&lastName=" + lastName + "@RequestBody: " + medicalrecords);
-        this.medicalRecordService.update(firstName, lastName, medicalrecords);
+    public void update(@PathVariable String id, @Valid @RequestBody MedicalRecord medicalrecords) {
+        log.info("PUT/medical-record/{id}=" + id + "(@RequestBody: " + medicalrecords);
+
+        this.medicalRecordService.update(id, medicalrecords);
     }
 
-    @DeleteMapping
+    @DeleteMapping("{id}")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void delete(@RequestParam String firstName, @RequestParam String lastName) {
-        logger.info("DELETE medicalRecord?firstName=" + firstName + "&lastName=" + lastName);
-        this.medicalRecordService.delete(firstName, lastName);
+    public void delete(@PathVariable String id) {
+        log.info("DELETE/medical-record/{id}=" + id);
+        this.medicalRecordService.delete(id);
     }
 
 }

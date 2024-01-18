@@ -1,6 +1,6 @@
 package com.ocrooms.safetynet.dto;
 
-import com.ocrooms.safetynet.entities.Medicalrecords;
+import com.ocrooms.safetynet.entities.MedicalRecord;
 import com.ocrooms.safetynet.entities.Person;
 import lombok.Data;
 
@@ -14,7 +14,7 @@ public class ChildDto {
 
     List<Person> family;
 
-    public ChildDto(Medicalrecords medicalrecords, List<Person> family) {
+    public ChildDto(MedicalRecord medicalrecords, List<Person> family) {
         this.firstName = medicalrecords.getFirstName();
         this.lastName = medicalrecords.getLastName();
         this.age =medicalrecords.calculateAge();

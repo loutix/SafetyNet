@@ -1,73 +1,75 @@
 package com.ocrooms.safetynet.service;
 
-import com.ocrooms.safetynet.entities.Medicalrecords;
-import com.ocrooms.safetynet.entities.Person;
+import com.ocrooms.safetynet.entities.MedicalRecord;
+import com.ocrooms.safetynet.repository.MedicalRecordsRepository;
+import com.ocrooms.safetynet.repository.PersonRepository;
 import com.ocrooms.safetynet.service.exceptions.ItemAlreadyExists;
 import com.ocrooms.safetynet.service.exceptions.ItemNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Set;
 
+@Slf4j
 @Service
 public class MedicalRecordService {
-    private final JsonService jsonService;
-    private final static Logger logger = LoggerFactory.getLogger(MedicalRecordService.class);
 
 
-    public MedicalRecordService(JsonService jsonService) {
-        this.jsonService = jsonService;
+    private final MedicalRecordsRepository medicalRecordsRepository;
+    private final PersonRepository personRepository;
 
-    }
-
-    public List<Medicalrecords> index() {
-        return this.jsonService.getData().getMedicalrecords();
+    public MedicalRecordService(MedicalRecordsRepository medicalRecordsRepository, PersonRepository personRepository) {
+        this.medicalRecordsRepository = medicalRecordsRepository;
+        this.personRepository = personRepository;
     }
 
 
-    public Medicalrecords show(String firstName, String lastName) {
-        return jsonService.getData().getMedicalrecords().stream()
-                .filter(medicalrecords -> medicalrecords.getFirstName().equalsIgnoreCase(firstName.trim()) && medicalrecords.getLastName().equalsIgnoreCase(lastName.trim()))
-                .findFirst()
-                .orElseThrow(() -> new ItemNotFoundException("The medical record with the name: " + firstName + " " + lastName + " is not found"));
+    public Set<MedicalRecord> index() {
+        return medicalRecordsRepository.getAll();
     }
 
-    public Medicalrecords create(Medicalrecords medicalrecords) {
 
-        medicalrecords.trimProperties();
+    public MedicalRecord show(String id) {
+        return medicalRecordsRepository.getMedicalRecordById(id);
+    }
 
-        if (jsonService.getData().getMedicalrecords().stream().anyMatch(mr -> mr.getFirstName().equalsIgnoreCase(medicalrecords.getFirstName()) && mr.getLastName().equalsIgnoreCase(medicalrecords.getLastName()))) {
-            throw new ItemAlreadyExists("Bad request:" + medicalrecords + " already exist");
+    public MedicalRecord create(MedicalRecord medicalrecords) {
+
+        medicalrecords.setFirstName(medicalrecords.getFirstName());
+        medicalrecords.setLastName(medicalrecords.getLastName());
+
+        //control if medical record already exist
+        if (medicalRecordsRepository.findAny(medicalrecords.getId()).isPresent()) {
+            throw new ItemAlreadyExists("The medical record ID already exist: " + medicalrecords.getId());
         }
-        Person personExist = jsonService.getData().getPersons().stream()
-                .filter(person -> person.getFirstName().equals(medicalrecords.getFirstName()) && person.getLastName().equals(medicalrecords.getLastName()))
-                .findFirst()
-                .orElseThrow(() -> new ItemNotFoundException("Bad request: create person before his medicalrecords"));
-
-        this.jsonService.getData().getMedicalrecords().add(medicalrecords);
-
-        return medicalrecords;
-    }
-
-
-    public void update(String firstName, String lastName, Medicalrecords medicalrecords) {
-
-        Medicalrecords medicalrecordToUpdate = this.show(firstName.trim(), lastName.trim());
-
-        medicalrecords.trimProperties();
-
-        if (medicalrecordToUpdate.getFirstName().equals(medicalrecords.getFirstName()) && medicalrecordToUpdate.getLastName().equals(medicalrecords.getLastName())) {
-            medicalrecordToUpdate.setBirthdate(medicalrecords.getBirthdate());
-            medicalrecordToUpdate.setMedications(medicalrecords.getMedications());
-            medicalrecordToUpdate.setAllergies(medicalrecords.getAllergies());
+        // control if person exist
+        else if (personRepository.findById(medicalrecords.getId()).isEmpty()) {
+            throw new ItemNotFoundException("Person not found, create person before his medical record: " + medicalrecords.getId());
         } else {
-            throw new ItemNotFoundException("@RequestParam : " + firstName + " " + lastName + " is different to @RequestBody " + medicalrecordToUpdate.getFirstName() + " " + medicalrecordToUpdate.getLastName());
+            log.info("Medical record created with success");
+            return medicalRecordsRepository.save(medicalrecords);
+        }
+
+    }
+
+
+    public void update(String id, MedicalRecord medicalrecords) {
+
+        MedicalRecord medicalRecordToUpdate = medicalRecordsRepository.getMedicalRecordById(medicalrecords.getId());
+
+        if (medicalrecords.getId().equalsIgnoreCase(id)) {
+            medicalRecordToUpdate.setBirthdate(medicalrecords.getBirthdate());
+            medicalRecordToUpdate.setMedications(medicalrecords.getMedications());
+            medicalRecordToUpdate.setAllergies(medicalrecords.getAllergies());
+            log.info("Medical record updated with success: ID=" + id);
+        } else {
+            throw new ItemNotFoundException("The @PathVariable ID different to the @RequestBody ID");
         }
     }
 
-    public void delete(String firstName, String lastName) {
-        jsonService.getData().getMedicalrecords().removeIf(medicalrecords -> medicalrecords.getFirstName().equalsIgnoreCase(firstName.trim()) && medicalrecords.getLastName().equalsIgnoreCase(lastName.trim()));
+    public void delete(String id) {
+        medicalRecordsRepository.delete(id);
+        log.info("Person deleted with success:  ID=" + id);
     }
 
 

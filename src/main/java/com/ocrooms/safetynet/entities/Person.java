@@ -2,13 +2,12 @@ package com.ocrooms.safetynet.entities;
 
 public class Person {
 
-    @NotNull
-    @Length(min = 2, max = 20)
-    private String firstName;
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+public class Person extends Id {
 
-    @NotNull
-    @Length(min = 2, max = 20)
-    private String lastName;
 
     @NotNull
     @Length(min = 2, max = 20)
@@ -30,14 +29,13 @@ public class Person {
     @Email
     private String email;
 
+
     public void trimProperties() {
-        this.firstName = this.firstName.trim();
-        this.lastName = this.lastName.trim();
-        this.address = this.address.trim();
-        this.city = this.city.trim();
-        this.zip = this.zip.trim();
-        this.phone = this.phone.trim();
-        this.email = this.email.trim();
+        address = address.trim();
+        city = city.trim();
+        zip = zip.trim();
+        phone = phone.trim();
+        email = email.trim();
     }
 
     public Person() {

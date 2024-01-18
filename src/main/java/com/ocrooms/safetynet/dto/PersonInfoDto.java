@@ -1,6 +1,6 @@
 package com.ocrooms.safetynet.dto;
 
-import com.ocrooms.safetynet.entities.Medicalrecords;
+import com.ocrooms.safetynet.entities.MedicalRecord;
 import com.ocrooms.safetynet.entities.Person;
 import lombok.Data;
 
@@ -17,7 +17,7 @@ public class PersonInfoDto {
     List<String> allergies;
 
 
-    public PersonInfoDto(Person person, Medicalrecords medicalrecords) {
+    public PersonInfoDto(Person person, MedicalRecord medicalrecords) {
         this.firstName = person.getFirstName();
         this.lastName = person.getLastName();
         this.address = person.getAddress();

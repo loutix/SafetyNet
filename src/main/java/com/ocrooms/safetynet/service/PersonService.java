@@ -1,68 +1,72 @@
 package com.ocrooms.safetynet.service;
 
 import com.ocrooms.safetynet.entities.Person;
+import com.ocrooms.safetynet.repository.PersonRepository;
 import com.ocrooms.safetynet.service.exceptions.ItemAlreadyExists;
 import com.ocrooms.safetynet.service.exceptions.ItemNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Set;
 
-
+@Slf4j
 @Service
 public class PersonService {
-    private final static Logger logger = LoggerFactory.getLogger(PersonService.class);
-    private final JsonService jsonService;
 
-    public PersonService(JsonService jsonService) {
-        this.jsonService = jsonService;
+    private final PersonRepository personRepository;
+
+    public PersonService(PersonRepository personRepository) {
+        this.personRepository = personRepository;
     }
 
-    public List<Person> index() {
-        return jsonService.getData().getPersons();
+    public Set<Person> index() {
+        return personRepository.getAll();
     }
 
 
-    public Person show(String firstName, String lastName) {
-        return jsonService.getData().getPersons().stream()
-                .filter(person -> person.getFirstName().equalsIgnoreCase(firstName.trim()) && person.getLastName().equalsIgnoreCase(lastName.trim()))
-                .findFirst()
-                .orElseThrow(() -> new ItemNotFoundException("The person with name: " + firstName + " " + lastName + " is not found"));
+    public Person show(String id) {
+        return personRepository.getPersonById(id);
     }
+
 
     public Person create(Person person) {
 
-        person.trimProperties();
+        person.setFirstName(person.getFirstName());
+        person.setLastName(person.getLastName());
 
-        if (jsonService.getData().getPersons().contains(person)) {
-            throw new ItemAlreadyExists("Bad request:" + person + " already exist");
+        if (personRepository.findAny(person.getId()).isPresent()) {
+            throw new ItemAlreadyExists("The person ID already exist : " + person.getId());
         } else {
-            System.out.println(person.getFirstName());
-            jsonService.getData().getPersons().add(person);
-            return person;
+            log.info("Person created with success") ;
+            return personRepository.save(person);
         }
     }
 
-    public void update(String firstName, String lastName, Person person) {
+    public void update(String id, Person person) {
 
-        Person personToUpdate = this.show(firstName.trim(), lastName.trim());
+        if (!id.equalsIgnoreCase(person.getId())) {
+            throw new ItemNotFoundException("The route ID is different to @RequestBody ID");
+        }
 
+        Person personToUpdate = personRepository.getPersonById(id);
+
+        person.setFirstName(person.getFirstName());
+        person.setLastName(person.getLastName());
         person.trimProperties();
 
-        if (personToUpdate.getFirstName().equals(person.getFirstName()) && personToUpdate.getLastName().equals(person.getLastName())) {
-            personToUpdate.setAddress(person.getAddress());
-            personToUpdate.setCity(person.getCity());
-            personToUpdate.setZip(person.getZip());
-            personToUpdate.setPhone(person.getPhone());
-            personToUpdate.setEmail(person.getEmail());
-        } else {
-            throw new ItemNotFoundException("@RequestParam : " + firstName + " " + lastName + " is different to @RequestBody " + personToUpdate.getFirstName() + " " + personToUpdate.getLastName());
-        }
+        personToUpdate.setAddress(person.getAddress());
+        personToUpdate.setCity(person.getCity());
+        personToUpdate.setZip(person.getZip());
+        personToUpdate.setPhone(person.getPhone());
+        personToUpdate.setEmail(person.getEmail());
+
+        log.info("Person updated with success: ID=" + id);
+
     }
 
-    public void delete(String firstName, String lastName) {
-        jsonService.getData().getPersons().removeIf(person -> person.getFirstName().equals(firstName) && person.getLastName().equals(lastName));
+    public void deletePerson(String id) {
+        personRepository.delete(id);
+        log.info("Person deleted with success:  ID=" + id);
     }
 }
 
