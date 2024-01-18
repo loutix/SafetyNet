@@ -2,6 +2,11 @@ package com.ocrooms.safetynet.service;
 
 import com.ocrooms.safetynet.dto.*;
 import com.ocrooms.safetynet.entities.Firestation;
+import com.ocrooms.safetynet.entities.MedicalRecord;
+import com.ocrooms.safetynet.entities.Person;
+import com.ocrooms.safetynet.repository.FireStationRepository;
+import com.ocrooms.safetynet.repository.MedicalRecordsRepository;
+import com.ocrooms.safetynet.repository.PersonRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
