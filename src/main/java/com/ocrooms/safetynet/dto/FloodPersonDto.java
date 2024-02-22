@@ -8,19 +8,26 @@ import java.util.List;
 
 @Data
 public class FloodPersonDto {
-    String firstName;
     String lastName;
+    Background background;
     String phone;
     Integer age;
-    List<String> medications;
-    List<String> allergies;
 
     public FloodPersonDto(Person person, MedicalRecord medicalrecords) {
-        this.firstName = person.getFirstName();
         this.lastName = person.getLastName();
         this.phone = person.getPhone();
         this.age = medicalrecords.calculateAge();
-        this.medications = medicalrecords.getMedications();
-        this.allergies = medicalrecords.getAllergies();
+        this.background = new Background(medicalrecords.getMedications(), medicalrecords.getAllergies());
+    }
+
+    @Data
+    public static class Background {
+        private List<String> medications;
+        private List<String> allergies;
+
+        public Background(List<String> medications, List<String> allergies) {
+            this.medications = medications;
+            this.allergies = allergies;
+        }
     }
 }

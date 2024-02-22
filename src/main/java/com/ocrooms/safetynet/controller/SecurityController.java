@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -33,7 +34,7 @@ public class SecurityController {
     }
 
     @GetMapping(path = "phone-alert")
-    public @ResponseBody List<String> searchPhoneAlert(@RequestParam Integer firestation) {
+    public @ResponseBody Set<String> searchPhoneAlert(@RequestParam Integer firestation) {
         log.info("GET/phone-alert?firestation=" + firestation);
         return this.securityService.searchPhoneAlert(firestation);
     }

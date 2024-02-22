@@ -27,7 +27,7 @@ public class MedicalRecord extends Id {
     }
 
     public boolean isMajor() {
-        return calculateAge() >= 18;
+        return calculateAge() >= 19;
     }
 
     public boolean isMinor() {

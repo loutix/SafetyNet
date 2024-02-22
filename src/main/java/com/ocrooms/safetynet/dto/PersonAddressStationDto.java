@@ -1,6 +1,5 @@
 package com.ocrooms.safetynet.dto;
 
-import com.ocrooms.safetynet.entities.Firestation;
 import com.ocrooms.safetynet.entities.MedicalRecord;
 import com.ocrooms.safetynet.entities.Person;
 import lombok.Data;
@@ -13,19 +12,16 @@ public class PersonAddressStationDto {
     String lastName;
     String phone;
     int age;
-    int stationNumber;
-    Firestation firestation;
+    List<Integer> stationNumber;
     List<String> medications;
     List<String> allergies;
 
-    public PersonAddressStationDto(Person person, Firestation firestation, MedicalRecord medicalrecords) {
+    public PersonAddressStationDto(Person person, List<Integer> stationNumber, MedicalRecord medicalrecords) {
         this.lastName = person.getLastName();
         this.phone = person.getPhone();
         this.age = medicalrecords.calculateAge();
-        this.stationNumber = firestation.getStation();
-        this.firestation = firestation;
+        this.stationNumber = stationNumber;
         this.medications = medicalrecords.getMedications();
         this.allergies = medicalrecords.getAllergies();
-
     }
 }

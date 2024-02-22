@@ -49,9 +49,7 @@ public class ApiExceptionHandler {
         ApiException apiException = new ApiException(exception, status);
         log.error(exception.getMessage(), exception);
         return new ResponseEntity<>(apiException, status);
-
     }
-
 
 
 }

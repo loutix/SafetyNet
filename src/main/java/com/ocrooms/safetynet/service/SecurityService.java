@@ -67,8 +67,14 @@ public class SecurityService {
                 .flatMap(person ->
                         medicalRecordsRepository.findAllByPerson(person)
                                 .filter(MedicalRecord::isMinor)
-                                .map(medicalrecords -> new ChildDto(medicalrecords,
-                                        personRepository.findAllByMedicalRecordLastName(medicalrecords).toList()))
+                                .map(medicalrecords ->
+                                        new ChildDto(
+                                                medicalrecords,
+                                                personRepository.findAllByMedicalRecordLastName(medicalrecords)
+                                                        .filter(person1 -> !person1.getId().equals(person.getId()))
+                                                        .toList()
+                                        )
+                                )
                 )
                 .toList();
     }
@@ -79,12 +85,12 @@ public class SecurityService {
      * @param station station
      * @return List<String>
      */
-    public List<String> searchPhoneAlert(Integer station) {
+    public Set<String> searchPhoneAlert(Integer station) {
 
         return firestationRepository.findAllByStation(station)
                 .flatMap(firestation -> personRepository.findAllByFireStation(firestation)
                         .map(Person::getPhone)
-                ).toList();
+                ).collect(Collectors.toSet());
     }
 
 
@@ -96,11 +102,14 @@ public class SecurityService {
      */
     public List<PersonAddressStationDto> searchFire(String address) {
 
+
+        List<Firestation> firestationList = firestationRepository.findAll().filter(firestation -> firestation.getAddress().equals(address)).toList();
+
+        List<Integer> stationNumber = firestationList.stream().map(Firestation::getStation).toList();
+
         return personRepository.findAllByAddress(address)
-                .flatMap(person -> firestationRepository.findAllByPerson(person)
-                        .flatMap(firestation -> medicalRecordsRepository.findAllByPerson(person)
-                                .map(medicalrecords -> new PersonAddressStationDto(person, firestation, medicalrecords))
-                        )
+                .flatMap(person -> medicalRecordsRepository.findAllByPerson(person)
+                        .map(medicalrecords -> new PersonAddressStationDto(person, stationNumber, medicalrecords))
                 ).toList();
     }
 
@@ -139,7 +148,7 @@ public class SecurityService {
      * Return persons info from the same family
      *
      * @param firstName firstName
-     * @param lastName lastName
+     * @param lastName  lastName
      * @return List<PersonInfoDto>
      */
     public List<PersonInfoDto> searchPersonInfo(String firstName, String lastName) {
@@ -153,7 +162,7 @@ public class SecurityService {
     /**
      * Return all emails of the city
      *
-     * @param city  city
+     * @param city city
      * @return List<String>
      */
     public List<String> searchEmail(String city) {

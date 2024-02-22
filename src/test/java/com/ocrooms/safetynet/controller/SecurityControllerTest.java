@@ -17,7 +17,9 @@ import org.springframework.util.MultiValueMap;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -133,7 +135,7 @@ class SecurityControllerTest {
     public void testGetAListOhPhoneNumber() throws Exception {
 
         Integer station = 1;
-        List<String> phoneNumbersList = new ArrayList<>(List.of("111", "222", "333"));
+        Set<String> phoneNumbersList = new HashSet<>(List.of("111", "222", "333"));
 
         when(securityService.searchPhoneAlert(any(Integer.class))).thenReturn(phoneNumbersList);
 
@@ -155,8 +157,9 @@ class SecurityControllerTest {
     void testGetPeronWhoLivesAtThisAddress() throws Exception {
 
         String address = "11 street";
+        List<Integer> station = List.of(firestationsList.get(0).getStation());
 
-        PersonAddressStationDto dto = new PersonAddressStationDto(personList.get(0), firestationsList.get(0), medicalRecordList.get(0));
+        PersonAddressStationDto dto = new PersonAddressStationDto(personList.get(0),station , medicalRecordList.get(0));
         List<PersonAddressStationDto> dtoList = new ArrayList<>(List.of(dto));
 
 
@@ -166,7 +169,7 @@ class SecurityControllerTest {
                         .param("address", address))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.[0].lastName").value(personList.get(0).getLastName()))
-                .andExpect(jsonPath("$.[0].firestation").value(firestationsList.get(0)))
+                .andExpect(jsonPath("$.[0].stationNumber").value(station.get(0)))
                 .andExpect(jsonPath("$.[0].medications").value(medicalRecordList.get(0).getMedications()))
                 .andExpect(jsonPath("$.[0].allergies").value(medicalRecordList.get(0).getAllergies()))
                 .andExpect(jsonPath("$.size()").value(dtoList.size()))

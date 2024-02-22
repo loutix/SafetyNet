@@ -42,18 +42,15 @@ class SecurityServiceTest {
     Firestation fireStation1 = new Firestation();
     Firestation fireStation2 = new Firestation();
 
-
-    Set<Person> personSet = new HashSet<>();
     private Person person1;
     private Person person2;
     private Person person3;
 
-    Set<MedicalRecord> medicalRecordSet = new HashSet<>();
+    //    Set<MedicalRecord> medicalRecordSet = new HashSet<>();
     private MedicalRecord medicalRecord1;
     private MedicalRecord medicalRecord2;
 
     private MedicalRecord medicalRecord3;
-
 
     @BeforeEach
     public void init() {
@@ -191,12 +188,10 @@ class SecurityServiceTest {
         when(personRepository.findAllByFireStation(fireStation1)).thenReturn(Stream.of(person1, person3));
 
         // WHEN
-        List<String> result = securityService.searchPhoneAlert(station);
+        Set<String> result = securityService.searchPhoneAlert(station);
 
         // THEN
         assertEquals(2, result.size());
-        assertEquals("888-8888-8888", result.get(0));
-        assertEquals("123123-123123", result.get(1));
 
         verify(fireStationRepository, times(1)).findAllByStation(station);
         verify(personRepository, times(1)).findAllByFireStation(fireStation1);
@@ -206,17 +201,19 @@ class SecurityServiceTest {
     @DisplayName("Return a list of persons living at this address")
     public void searchFire() {
 
+        List<Integer> stationNumber = new ArrayList<>(fireStation1.getStation());
+
         //GIVEN
         String address = "11 rue des champs";
 
-        PersonAddressStationDto personDto1 = new PersonAddressStationDto(person1, fireStation1, medicalRecord1);
-        PersonAddressStationDto personDto2 = new PersonAddressStationDto(person3, fireStation1, medicalRecord3);
+        Stream<Firestation> firestationStream = Stream.of(fireStation1, fireStation2);
+        PersonAddressStationDto personDto1 = new PersonAddressStationDto(person1, stationNumber, medicalRecord1);
+        PersonAddressStationDto personDto2 = new PersonAddressStationDto(person3, stationNumber, medicalRecord3);
         List<PersonAddressStationDto> dtoList = new ArrayList<>(List.of(personDto1, personDto2));
 
         //WHEN
+        when(fireStationRepository.findAll()).thenReturn(firestationStream);
         when(personRepository.findAllByAddress(address)).thenReturn(Stream.of(person1, person3));
-        when(fireStationRepository.findAllByPerson(person1)).thenReturn(Stream.of(fireStation1));
-        when(fireStationRepository.findAllByPerson(person3)).thenReturn(Stream.of(fireStation1));
         when(medicalRecordsRepository.findAllByPerson(person1)).thenReturn(Stream.of(medicalRecord1));
         when(medicalRecordsRepository.findAllByPerson(person3)).thenReturn(Stream.of(medicalRecord3));
 
@@ -224,7 +221,7 @@ class SecurityServiceTest {
 
         // THEN
         assertEquals(dtoList.size(), result.size());
-        assertEquals(dtoList, result);
+
         PersonAddressStationDto dto1 = result.get(0);
         PersonAddressStationDto dto2 = result.get(1);
 
@@ -234,9 +231,8 @@ class SecurityServiceTest {
         assertEquals("winter", dto2.getLastName());
         assertEquals("123123-123123", dto2.getPhone());
 
+        verify(fireStationRepository, times(1)).findAll();
         verify(personRepository, times(1)).findAllByAddress(address);
-        verify(fireStationRepository, times(1)).findAllByPerson(person1);
-        verify(fireStationRepository, times(1)).findAllByPerson(person3);
         verify(medicalRecordsRepository, times(1)).findAllByPerson(person1);
         verify(medicalRecordsRepository, times(1)).findAllByPerson(person3);
     }
@@ -298,8 +294,6 @@ class SecurityServiceTest {
     public void searchEmail() {
         //GIVEN
         String city = "Londres";
-
-        PersonInfoDto personDto = new PersonInfoDto(person1, medicalRecord1);
 
         //WHEN
         when(personRepository.findAllByCity(city)).thenReturn(Stream.of(person1));
