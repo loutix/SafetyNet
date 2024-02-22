@@ -18,7 +18,6 @@ import java.util.Set;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -39,41 +38,6 @@ class FireStationControllerTest {
         firestationsSet.add(new Firestation("Bordeaux", 2));
         firestationsSet.add(new Firestation("Lyon", 3));
         firestationsSet.add(new Firestation("Lyon", 4));
-    }
-
-    @Test
-    @DisplayName(("Get all firestations"))
-    public void testGetFireStations() throws Exception {
-
-        when(fireStationService.index()).thenReturn(firestationsSet);
-        mockMvc.perform(get("/firestations"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(firestationsSet.size()))
-                .andExpect(jsonPath("$[0].address", is("Lyon")))
-                .andExpect(jsonPath("$[0].station", is(3)))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @DisplayName(("Show a specific fire station"))
-    public void testShowFireStations() throws Exception {
-
-        String targetAddress = "Lyon";
-
-        Integer targetStation = 3;
-
-        Firestation getFireStation = firestationsSet.stream()
-                .filter(firestation -> firestation.getAddress().equals(targetAddress.trim()))
-                .filter(firestation -> firestation.getStation().equals(3)).findAny().get();
-
-        when(fireStationService.show(targetAddress, targetStation)).thenReturn(getFireStation);
-        mockMvc.perform(get("/firestations/show")
-                        .param("address", targetAddress)
-                        .param("station", String.valueOf(targetStation)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.address", is(targetAddress)))
-                .andExpect(jsonPath("$.station", is(targetStation)))
-                .andDo(print());
     }
 
     @Test

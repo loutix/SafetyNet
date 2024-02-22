@@ -1,7 +1,6 @@
 package com.ocrooms.safetynet.service;
 
 import com.ocrooms.safetynet.entities.Firestation;
-import com.ocrooms.safetynet.entities.Person;
 import com.ocrooms.safetynet.repository.FireStationRepository;
 import com.ocrooms.safetynet.service.exceptions.ItemAlreadyExists;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,37 +41,6 @@ class FireStationServiceTest {
 
         firestationSet.add(fireStation1);
         firestationSet.add(fireStation2);
-    }
-
-    @Test
-    @DisplayName("Show all fire stations")
-    public void indexFireStations() {
-
-        //GIVEN
-
-        //WHEN
-        when(fireStationRepository.getAll()).thenReturn(firestationSet);
-
-        Set<Firestation> allFireStations = fireStationService.index();
-        //THEN
-        assertEquals(firestationSet, allFireStations);
-        verify(fireStationRepository, times(1)).getAll();
-    }
-
-    @Test
-    @DisplayName("Show a fire station")
-    public void ShowFireStation() {
-        //GIVEN
-        String address = "Paris";
-        Integer station = 1;
-
-        //WHEN
-        when(fireStationRepository.getByAddressAndStation(anyString(), anyInt())).thenReturn(fireStation1);
-        Firestation fireStationShow = fireStationService.show(address, station);
-
-        //THEN
-        assertEquals(fireStation1, fireStationShow);
-        verify(fireStationRepository, times(1)).getByAddressAndStation(address, station);
     }
 
     @Test

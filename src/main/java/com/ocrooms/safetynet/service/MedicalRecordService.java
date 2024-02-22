@@ -8,8 +8,6 @@ import com.ocrooms.safetynet.service.exceptions.ItemNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
-
 @Slf4j
 @Service
 public class MedicalRecordService {
@@ -23,15 +21,6 @@ public class MedicalRecordService {
         this.personRepository = personRepository;
     }
 
-
-    public Set<MedicalRecord> index() {
-        return medicalRecordsRepository.getAll();
-    }
-
-
-    public MedicalRecord show(String id) {
-        return medicalRecordsRepository.getMedicalRecordById(id);
-    }
 
     public MedicalRecord create(MedicalRecord medicalrecords) {
 

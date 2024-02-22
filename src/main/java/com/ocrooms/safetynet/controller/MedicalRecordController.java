@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
 @Slf4j
 @RestController
 @RequestMapping(value = "medical-record")
@@ -18,18 +17,6 @@ public class MedicalRecordController {
 
     public MedicalRecordController(MedicalRecordService medicalRecordService) {
         this.medicalRecordService = medicalRecordService;
-    }
-
-    @GetMapping
-    public Set<MedicalRecord> index() {
-       log.info("GET /medical-record");
-        return this.medicalRecordService.index();
-    }
-
-    @GetMapping("{id}")
-    public MedicalRecord show(@PathVariable String id) {
-        log.info("GET/medical-record/{id} = " + id);
-        return this.medicalRecordService.show(id);
     }
 
     @PostMapping

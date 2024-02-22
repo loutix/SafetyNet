@@ -7,8 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
-
 @Slf4j
 @RestController
 @RequestMapping(path = "person")
@@ -18,18 +16,6 @@ public class PersonController {
 
     public PersonController(PersonService personService) {
         this.personService = personService;
-    }
-
-    @GetMapping
-    public @ResponseBody Set<Person> index() {
-        log.info("GET/person");
-        return personService.index();
-    }
-
-    @GetMapping("{id}")
-    public @ResponseBody Person show(@PathVariable String id) {
-        log.info("GET/person/{id} = " + id);
-        return personService.show(id);
     }
 
     @PostMapping

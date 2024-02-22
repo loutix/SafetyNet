@@ -17,7 +17,6 @@ import java.util.Set;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -49,42 +48,6 @@ class PersonControllerTest {
         newPerson3.setFirstName("Peet");
         newPerson3.setLastName("Poule");
         personSet.add(newPerson3);
-    }
-
-    @Test
-    @DisplayName(("Get all persons"))
-    public void testGetPersons() throws Exception {
-
-        when(personService.index()).thenReturn(personSet);
-        mockMvc.perform(get("/person"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(personSet.size()));
-
-        verify(personService, times(1)).index();
-
-    }
-
-
-    @Test
-    @DisplayName(("Show a specific person"))
-    public void testShowPerson() throws Exception {
-
-        String id = "Peet-Poule";
-
-        Person getPerson = personSet.stream().filter(person -> person.getId().equals(id)).findAny().orElse(null);
-
-        when(personService.show(id)).thenReturn(getPerson);
-        assert getPerson != null;
-        mockMvc.perform(get("/person/{id}", id))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(getPerson.getId()))
-                .andExpect(jsonPath("$.address").value(getPerson.getAddress()))
-                .andExpect(jsonPath("$.city").value(getPerson.getCity()))
-                .andExpect(jsonPath("$.zip").value(getPerson.getZip()))
-                .andExpect(jsonPath("$.phone").value(getPerson.getPhone()))
-                .andExpect(jsonPath("$.email").value(getPerson.getEmail()));
-        //.andDo(print());
-        verify(personService, times(1)).show(id);
     }
 
     @Test
@@ -126,7 +89,6 @@ class PersonControllerTest {
         updatedPerson.trimProperties();
 
         doNothing().when(personService).update(id, updatedPerson);
-        when(personService.show(id)).thenReturn(updatedPerson);
 
         mockMvc.perform(put("/person/{id}", id)
                         .content(new ObjectMapper().writeValueAsString(updatedPerson))
@@ -134,17 +96,7 @@ class PersonControllerTest {
                 .andExpect(status().isNoContent());
 
 
-        mockMvc.perform(get("/person/{id}", id))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(updatedPerson.getId()))
-                .andExpect(jsonPath("$.address").value(updatedPerson.getAddress()))
-                .andExpect(jsonPath("$.city").value(updatedPerson.getCity()))
-                .andExpect(jsonPath("$.zip").value(updatedPerson.getZip()))
-                .andExpect(jsonPath("$.phone").value(updatedPerson.getPhone()))
-                .andExpect(jsonPath("$.email").value(updatedPerson.getEmail()))
-                .andDo(print());
         verify(personService, times(1)).update(anyString(), any(Person.class));
-        verify(personService, times(1)).show(id);
     }
 
 

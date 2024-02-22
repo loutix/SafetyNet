@@ -67,35 +67,6 @@ public class MedicalRecordServiceTest {
 
 
     @Test
-    @DisplayName("Get all medical records")
-    public void indexMedicalRecords() {
-        //GIVEN
-        //WHEN
-        when(medicalRecordsRepository.getAll()).thenReturn(medicalRecordSet);
-        Set<MedicalRecord> allMedicalRecords = medicalRecordService.index();
-
-        //THEN
-        assertEquals(medicalRecordSet, allMedicalRecords);
-        verify(medicalRecordsRepository, times(1)).getAll();
-
-    }
-
-    @Test
-    @DisplayName("Show a medical record")
-    public void showMedicalRecord() {
-        //GIVEN
-        String id = "user1-spring";
-        //WHEN
-        when(medicalRecordsRepository.getMedicalRecordById(id)).thenReturn(medicalRecord1);
-        MedicalRecord medicalRecordShow = medicalRecordService.show(id);
-
-        //THEN
-        assertEquals(medicalRecord1, medicalRecordShow);
-        verify(medicalRecordsRepository, times(1)).getMedicalRecordById(id);
-
-    }
-
-    @Test
     @DisplayName("Create a medical record")
     public void createMedicalRecord() {
         //GIVEN

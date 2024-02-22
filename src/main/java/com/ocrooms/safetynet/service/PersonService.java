@@ -7,8 +7,6 @@ import com.ocrooms.safetynet.service.exceptions.ItemNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
-
 @Slf4j
 @Service
 public class PersonService {
@@ -17,15 +15,6 @@ public class PersonService {
 
     public PersonService(PersonRepository personRepository) {
         this.personRepository = personRepository;
-    }
-
-    public Set<Person> index() {
-        return personRepository.getAll();
-    }
-
-
-    public Person show(String id) {
-        return personRepository.getPersonById(id);
     }
 
 
@@ -37,7 +26,7 @@ public class PersonService {
         if (personRepository.findAny(person.getId()).isPresent()) {
             throw new ItemAlreadyExists("The person ID already exist : " + person.getId());
         } else {
-            log.info("Person created with success") ;
+            log.info("Person created with success");
             return personRepository.save(person);
         }
     }

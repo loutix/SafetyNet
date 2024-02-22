@@ -17,7 +17,6 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,30 +55,6 @@ class PersonServiceTest {
         personSet.add(person2);
     }
 
-
-    @Test
-    @DisplayName("Show all persons")
-    public void indexPerson() {
-        //WHEN
-        when(personRepository.getAll()).thenReturn(personSet);
-        Set<Person> allPersons = personService.index();
-
-        //THEN
-        assertEquals(personSet, allPersons);
-        verify(personRepository, times(1)).getAll();
-    }
-
-    @Test
-    @DisplayName("Show a person")
-    public void ShowPerson() {
-        String id = "user1-spring";
-        when(personRepository.getPersonById(any())).thenReturn(person1);
-        Person personShow = personService.show(id);
-        assertEquals(person1, personShow);
-        verify(personRepository,times(1)).getPersonById(id);
-
-    }
-
     @Test
     @DisplayName("Create a new person")
     public void createNewPerson() {
@@ -100,8 +75,8 @@ class PersonServiceTest {
 
         //THEN
         assertEquals(newPerson, personCreated);
-        verify(personRepository,times(1)).findAny(anyString());
-        verify(personRepository,times(1)).save(newPerson);
+        verify(personRepository, times(1)).findAny(anyString());
+        verify(personRepository, times(1)).save(newPerson);
     }
 
     @Test
@@ -113,8 +88,8 @@ class PersonServiceTest {
         when(personRepository.findAny(anyString())).thenReturn(Optional.of(person1));
 
         //THEN
-        assertThrows(ItemAlreadyExists.class, ()->personService.create(person1));
-        verify(personRepository,times(1)).findAny(anyString());
+        assertThrows(ItemAlreadyExists.class, () -> personService.create(person1));
+        verify(personRepository, times(1)).findAny(anyString());
     }
 
     @Test
@@ -138,7 +113,7 @@ class PersonServiceTest {
         String id = "user2-winter";
         Person person = person1;
         //THEN
-        assertThrows(ItemNotFoundException.class, ()->personService.update(id, person));
+        assertThrows(ItemNotFoundException.class, () -> personService.update(id, person));
     }
 
     @Test

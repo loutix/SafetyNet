@@ -6,8 +6,6 @@ import com.ocrooms.safetynet.service.exceptions.ItemAlreadyExists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
-
 @Slf4j
 @Service
 public class FireStationService {
@@ -15,14 +13,6 @@ public class FireStationService {
 
     public FireStationService(FireStationRepository fireStationRepository) {
         this.fireStationRepository = fireStationRepository;
-    }
-
-    public Set<Firestation> index() {
-        return fireStationRepository.getAll();
-    }
-
-    public Firestation show(String address, Integer station) {
-        return fireStationRepository.getByAddressAndStation(address, station);
     }
 
     public Firestation create(Firestation firestation) {

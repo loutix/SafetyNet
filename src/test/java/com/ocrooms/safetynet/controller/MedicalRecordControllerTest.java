@@ -59,43 +59,6 @@ class MedicalRecordControllerTest {
         medicalRecordset.add(newMr3);
     }
 
-
-    @Test
-    @DisplayName(("Get all medical records"))
-    public void testGetMedicalRecords() throws Exception {
-
-        when(medicalRecordService.index()).thenReturn(medicalRecordset);
-
-        mockMvc.perform(get("/medical-record"))
-                .andExpect(jsonPath("$.size()").value(medicalRecordset.size()))
-                .andExpect(status().isOk());
-
-        verify(medicalRecordService, times(1)).index();
-    }
-
-
-    @Test
-    @DisplayName(("Show a specific medical record"))
-    public void testShowMedicalRecord() throws Exception {
-
-        String id = "Peet-Poule";
-
-        MedicalRecord getMedicalRecord = medicalRecordset.stream().filter(medicalRecord -> medicalRecord.getId().equals(id)).findAny().orElse(null);
-
-        when(medicalRecordService.show(id)).thenReturn(getMedicalRecord);
-
-        assert getMedicalRecord != null;
-        mockMvc.perform(get("/medical-record/{id}", id))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(getMedicalRecord.getId()))
-                .andExpect(jsonPath("$.medications").value(getMedicalRecord.getMedications()))
-                .andExpect(jsonPath("$.allergies").value(getMedicalRecord.getAllergies()))
-                .andExpect(status().isOk());
-
-        verify(medicalRecordService, times(1)).show(id);
-    }
-
-
     @Test
     @DisplayName(("Create a  medical record"))
     public void testCreatePerson() throws Exception {
