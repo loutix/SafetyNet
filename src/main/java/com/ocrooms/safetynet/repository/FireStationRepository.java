@@ -19,16 +19,18 @@ public class FireStationRepository {
     private final JsonService jsonService;
 
     public Set<Firestation> getAll() {
-
+        log.info("Enter on method getAll");
         return jsonService.getData().getFirestations();
     }
 
     public Stream<Firestation> findAll() {
+        log.info("Enter on method findAll");
         return getAll().parallelStream();
     }
 
 
     public Optional<Firestation> findAny(Firestation firestation) {
+        log.info("Enter on method findAny with parameters : {}", firestation);
         return findAll()
                 .filter(fire -> fire.equals(firestation)).findAny();
     }
