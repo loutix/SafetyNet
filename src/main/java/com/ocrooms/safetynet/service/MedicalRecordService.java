@@ -35,9 +35,6 @@ public class MedicalRecordService {
 
     public MedicalRecord create(MedicalRecord medicalrecords) {
 
-        medicalrecords.setFirstName(medicalrecords.getFirstName());
-        medicalrecords.setLastName(medicalrecords.getLastName());
-
         //control if medical record already exist
         if (medicalRecordsRepository.findAny(medicalrecords.getId()).isPresent()) {
             throw new ItemAlreadyExists("The medical record ID already exist: " + medicalrecords.getId());

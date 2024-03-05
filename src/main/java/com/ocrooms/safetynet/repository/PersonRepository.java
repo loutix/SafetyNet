@@ -53,7 +53,7 @@ public class PersonRepository {
     }
 
     public void delete(String id) {
-        getAll().remove(getPersonById(id));
+        getAll().removeIf(person -> person.getId().equalsIgnoreCase(id));
     }
 
 

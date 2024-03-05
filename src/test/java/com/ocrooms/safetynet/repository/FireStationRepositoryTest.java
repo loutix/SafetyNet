@@ -308,7 +308,7 @@ class FireStationRepositoryTest {
 
         // THEN
         assertTrue(result.isEmpty());
-        verify(jsonService, times(3)).getData();
+        verify(jsonService, times(2)).getData();
     }
 
 

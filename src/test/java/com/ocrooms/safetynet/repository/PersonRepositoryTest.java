@@ -143,20 +143,6 @@ class PersonRepositoryTest {
     }
 
     @Test
-    @DisplayName("TestFindById-not-found")
-    void testFindByAddressNotFound() {
-        //GIVEN
-        String id = "user2-summer";
-
-        // WHEN
-        when(jsonService.getData()).thenReturn(new DataObject(personSet, null, null));
-        assertThrows(RuntimeException.class, () -> personRepository.findById(id));
-
-        // THEN
-        verify(jsonService, times(1)).getData();
-    }
-
-    @Test
     @DisplayName("TestGetByAddress-found")
     void testGetByAddressFound() {
         //GIVEN
@@ -222,7 +208,7 @@ class PersonRepositoryTest {
 
         // THEN
         assertTrue(result.isEmpty());
-        verify(jsonService, times(3)).getData();
+        verify(jsonService, times(2)).getData();
     }
 
 

@@ -45,11 +45,11 @@ public class ApiExceptionHandler {
     }
 
 
-    private ResponseEntity<ApiException> handleException(Exception exception, HttpStatus status) {
-        ApiException apiException = new ApiException(exception, status);
-        log.error(exception.getMessage(), exception);
-        return new ResponseEntity<>(apiException, status);
-    }
+//    private ResponseEntity<ApiException> handleException(Exception exception, HttpStatus status) {
+//        ApiException apiException = new ApiException(exception, status);
+//        log.error(exception.getMessage(), exception);
+//        return new ResponseEntity<>(apiException, status);
+//    }
 
 
 }

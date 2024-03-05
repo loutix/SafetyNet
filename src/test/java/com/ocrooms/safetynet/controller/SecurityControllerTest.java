@@ -16,10 +16,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -91,14 +88,14 @@ class SecurityControllerTest {
 
         Integer station = 1;
 
-        PersonDto personDto = new PersonDto(personList.get(0));
+        PersonDto personDto = new PersonDto(personList.getFirst());
         List<PersonDto> personDtoList = new ArrayList<>(List.of(personDto));
 
         PersonListDto personListDto = new PersonListDto(personDtoList, 1);
 
         when(securityService.searchFirestation(any(Integer.class))).thenReturn(personListDto);
 
-        mockMvc.perform(get("/fire-station")
+        mockMvc.perform(get("/firestation")
                         .param("station", String.valueOf(station)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.personDtoList[0].firstName").value("Paul"))
@@ -114,12 +111,12 @@ class SecurityControllerTest {
 
         String address = "Paris";
 
-        ChildDto childDto = new ChildDto(medicalRecordList.get(0), personList);
+        ChildDto childDto = new ChildDto(medicalRecordList.getFirst(), personList);
         List<ChildDto> childDtoList = new ArrayList<>(List.of(childDto));
 
         when(securityService.searchChildAlert(any(String.class))).thenReturn(childDtoList);
 
-        mockMvc.perform(get("/child-alert")
+        mockMvc.perform(get("/childAlert")
                         .param("address", address))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.[0].firstName").value("Paul"))
@@ -139,7 +136,7 @@ class SecurityControllerTest {
 
         when(securityService.searchPhoneAlert(any(Integer.class))).thenReturn(phoneNumbersList);
 
-        mockMvc.perform(get("/phone-alert")
+        mockMvc.perform(get("/phoneAlert")
                         .param("firestation", String.valueOf(station)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.[0]").value("111"))
@@ -157,9 +154,9 @@ class SecurityControllerTest {
     void testGetPeronWhoLivesAtThisAddress() throws Exception {
 
         String address = "11 street";
-        List<Integer> station = List.of(firestationsList.get(0).getStation());
+        List<Integer> station = List.of(firestationsList.getFirst().getStation());
 
-        PersonAddressStationDto dto = new PersonAddressStationDto(personList.get(0),station , medicalRecordList.get(0));
+        PersonAddressStationDto dto = new PersonAddressStationDto(personList.getFirst(), station, medicalRecordList.get(0));
         List<PersonAddressStationDto> dtoList = new ArrayList<>(List.of(dto));
 
 
@@ -223,9 +220,9 @@ class SecurityControllerTest {
 
         System.out.println(personInfoDtoList);
 
-        when(securityService.searchPersonInfo(any(String.class), any(String.class))).thenReturn(personInfoDtoList);
+        when(securityService.searchPersonInfo(any(Optional.class), any(String.class))).thenReturn(personInfoDtoList);
 
-        mockMvc.perform(get("/person-info")
+        mockMvc.perform(get("/personInfo")
                         .param("firstName", firstName)
                         .param("lastName", lastName))
                 .andExpect(status().isOk())
@@ -233,7 +230,7 @@ class SecurityControllerTest {
                 .andExpect(jsonPath("$.[0].lastName").value(personInfoDto_1.getLastName()))
                 .andExpect(jsonPath("$.size()").value(personInfoDtoList.size()));
 
-        verify(securityService, times(1)).searchPersonInfo(any(String.class), any(String.class));
+        verify(securityService, times(1)).searchPersonInfo(any(Optional.class), any(String.class));
     }
 
 
@@ -242,16 +239,12 @@ class SecurityControllerTest {
     void testGetAllEmailByCity() throws Exception {
         String city = "Paris";
 
-        List<String> emailList = new ArrayList<>(List.of("test1@gmail.com", "test2@gmail.com", "test3@gmail.com"));
+        Set<String> emailList = new HashSet<>(List.of("test1@gmail.com", "test2@gmail.com", "test3@gmail.com"));
 
-        System.out.println(emailList);
         when(securityService.searchEmail(any(String.class))).thenReturn(emailList);
-        mockMvc.perform(get("/community-email")
+        mockMvc.perform(get("/communityEmail")
                         .param("city", city))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0]").value("test1@gmail.com"))
-                .andExpect(jsonPath("$[1]").value("test2@gmail.com"))
-                .andExpect(jsonPath("$[2]").value("test3@gmail.com"))
                 .andExpect(jsonPath("$.size()").value(emailList.size()))
                 .andDo(print());
         verify(securityService, times(1)).searchEmail(any(String.class));
