@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -151,9 +152,18 @@ public class SecurityService {
      * @param lastName  lastName
      * @return List<PersonInfoDto>
      */
-    public List<PersonInfoDto> searchPersonInfo(String firstName, String lastName) {
+    public List<PersonInfoDto> searchPersonInfo(Optional<String> firstName, String lastName) {
 
-        return personRepository.findAllByLastName(lastName)
+        List<Person> persons = personRepository.findAllByLastName(lastName).toList();
+
+        if (firstName.isPresent()) {
+            persons = persons.stream()
+                    .filter(person -> person.getFirstName().equals(firstName.get()))
+                    .toList();
+        }
+
+        return persons
+                .stream()
                 .flatMap(person -> medicalRecordsRepository.findAllByPerson(person)
                         .map(medicalrecords -> new PersonInfoDto(person, medicalrecords))
                 ).toList();
@@ -165,9 +175,9 @@ public class SecurityService {
      * @param city city
      * @return List<String>
      */
-    public List<String> searchEmail(String city) {
+    public Set<String> searchEmail(String city) {
         return personRepository.findAllByCity(city)
-                .map(Person::getEmail).toList();
+                .map(Person::getEmail).collect(Collectors.toSet());
     }
 
 }

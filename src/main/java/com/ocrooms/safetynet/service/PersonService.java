@@ -19,10 +19,7 @@ public class PersonService {
 
 
     public Person create(Person person) {
-
-        person.setFirstName(person.getFirstName());
-        person.setLastName(person.getLastName());
-
+        
         if (personRepository.findAny(person.getId()).isPresent()) {
             throw new ItemAlreadyExists("The person ID already exist : " + person.getId());
         } else {
@@ -39,8 +36,6 @@ public class PersonService {
 
         Person personToUpdate = personRepository.getPersonById(id);
 
-        person.setFirstName(person.getFirstName());
-        person.setLastName(person.getLastName());
         person.trimProperties();
 
         personToUpdate.setAddress(person.getAddress());

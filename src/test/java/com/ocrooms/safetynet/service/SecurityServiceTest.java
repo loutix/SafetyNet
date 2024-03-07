@@ -16,13 +16,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -164,7 +162,7 @@ class SecurityServiceTest {
 
         // THEN
         assertEquals(2, result.size());
-        ChildDto childDto1 = result.get(0);
+        ChildDto childDto1 = result.getFirst();
         assertEquals("user1", childDto1.getFirstName());
         assertEquals("spring", childDto1.getLastName());
         assertEquals(14, childDto1.getAge());
@@ -254,7 +252,7 @@ class SecurityServiceTest {
 
         //THEN
         assertEquals(1, result.size());
-        FloodDto dto = result.get(0);
+        FloodDto dto = result.getFirst();
 
         assertEquals("33 rue des champs", dto.getAddress());
         assertEquals(floodPersonDtoList, dto.getPersonListFlooded());
@@ -269,7 +267,7 @@ class SecurityServiceTest {
     @DisplayName("Return persons info from the same family.")
     public void searchPersonInfo() {
         //GIVEN
-        String firstName = "user1";
+        Optional<String> firstName = Optional.of("user1");
         String lastName = "spring";
 
         PersonInfoDto personDto = new PersonInfoDto(person1, medicalRecord1);
@@ -297,11 +295,11 @@ class SecurityServiceTest {
 
         //WHEN
         when(personRepository.findAllByCity(city)).thenReturn(Stream.of(person1));
-        List<String> result = securityService.searchEmail(city);
+        Set<String> result = securityService.searchEmail(city);
 
         //THEN
         assertEquals(1, result.size());
-        assertEquals(person1.getEmail(), result.get(0));
+        assertTrue(result.contains(person1.getEmail()));
         verify(personRepository, times(1)).findAllByCity(city);
     }
 

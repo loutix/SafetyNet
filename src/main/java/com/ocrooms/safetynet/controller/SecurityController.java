@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
@@ -21,19 +22,19 @@ public class SecurityController {
         this.securityService = securityService;
     }
 
-    @GetMapping(path = "fire-station")
+    @GetMapping(path = "firestation")
     public @ResponseBody PersonListDto searchFirestation(@RequestParam int station) {
         log.info("GET/fire-station?station=" + station);
         return this.securityService.searchFirestation(station);
     }
 
-    @GetMapping(path = "child-alert")
+    @GetMapping(path = "childAlert")
     public @ResponseBody List<ChildDto> searchChildAlert(@RequestParam String address) {
         log.info("GET/child-alert?address=" + address);
         return this.securityService.searchChildAlert(address);
     }
 
-    @GetMapping(path = "phone-alert")
+    @GetMapping(path = "phoneAlert")
     public @ResponseBody Set<String> searchPhoneAlert(@RequestParam Integer firestation) {
         log.info("GET/phone-alert?firestation=" + firestation);
         return this.securityService.searchPhoneAlert(firestation);
@@ -51,14 +52,14 @@ public class SecurityController {
         return this.securityService.searchFlood(stations);
     }
 
-    @GetMapping(path = "person-info")
-    public @ResponseBody List<PersonInfoDto> searchPersonInfo(@RequestParam String firstName, String lastName) {
+    @GetMapping(path = "personInfo")
+    public @ResponseBody List<PersonInfoDto> searchPersonInfo(@RequestParam(required = false) Optional<String> firstName, @RequestParam String lastName) {
         log.info("GET/person-info?firstName=" + firstName + "&+lastName=" + lastName);
         return this.securityService.searchPersonInfo(firstName, lastName);
     }
 
-    @GetMapping(path = "community-email")
-    public @ResponseBody List<String> searchEmail(@RequestParam String city) {
+    @GetMapping(path = "communityEmail")
+    public @ResponseBody Set<String> searchEmail(@RequestParam String city) {
         log.info("GET/community-email?city=" + city);
         return this.securityService.searchEmail(city);
     }

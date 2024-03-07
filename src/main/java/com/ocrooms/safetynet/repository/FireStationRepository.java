@@ -79,8 +79,8 @@ public class FireStationRepository {
     }
 
     public void delete(String address, Integer station) {
-        log.info("delete fire station ");
-        getAll().remove(getByAddressAndStation(address, station));
+        getAll().removeIf(firestation -> firestation.getAddress().equalsIgnoreCase(address) &&
+                firestation.getStation().equals(station));
     }
 
 

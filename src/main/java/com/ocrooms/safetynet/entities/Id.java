@@ -1,10 +1,10 @@
 package com.ocrooms.safetynet.entities;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
+import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
-@Getter
+@Data
 public class Id {
 
     @NotNull
@@ -18,14 +18,5 @@ public class Id {
     public String getId() {
         return firstName + "-" + lastName;
     }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName.trim();
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName.trim();
-    }
-
 
 }
